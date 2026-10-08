@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createTask, getTasks } from "@/lib/tasks";
 import type { Priority, Task } from "@/types/task";
+import { auth } from "@/auth";
 
 const validPriorities: Priority[] = ["Low", "Medium", "High", "Urgent"];
 
@@ -9,6 +10,16 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  
+  const session = await auth();
+
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
 

@@ -5,12 +5,23 @@ import {
   getCategories,
 } from "@/lib/categories";
 import type { Category } from "@/types/category";
+import { auth } from "@/auth";
 
 export async function GET() {
   return NextResponse.json(getCategories());
 }
 
 export async function POST(request: Request) {
+  
+const session = await auth();
+
+if (!session?.user) {
+  return NextResponse.json(
+    { error: "Unauthorized" },
+    { status: 401 }
+  );
+}
+
   try {
     const body = await request.json();
 

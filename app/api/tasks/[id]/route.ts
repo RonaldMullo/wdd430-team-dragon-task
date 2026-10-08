@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import {
   deleteTask,
@@ -5,8 +6,14 @@ import {
   updateTask,
 } from "@/lib/tasks";
 import type { Priority } from "@/types/task";
+import { auth } from "@/auth";
 
-const validPriorities: Priority[] = ["Low", "Medium", "High", "Urgent"];
+const validPriorities: Priority[] = [
+  "Low",
+  "Medium",
+  "High",
+  "Urgent",
+];
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -33,6 +40,15 @@ export async function PUT(
   request: Request,
   context: RouteContext
 ) {
+  const session = await auth();
+
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
   try {
     const { id } = await context.params;
     const body = await request.json();
@@ -69,6 +85,15 @@ export async function DELETE(
   _request: Request,
   context: RouteContext
 ) {
+  const session = await auth();
+
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
   const { id } = await context.params;
   const deleted = deleteTask(id);
 
@@ -79,7 +104,7 @@ export async function DELETE(
     );
   }
 
-  return NextResponse.json(
-    { message: "Task deleted successfully" }
-  );
+  return NextResponse.json({
+    message: "Task deleted successfully",
+  });
 }

@@ -1,4 +1,6 @@
+
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 import {
   categoryNameExists,
   deleteCategory,
@@ -31,6 +33,15 @@ export async function PUT(
   request: Request,
   context: RouteContext
 ) {
+  const session = await auth();
+
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
   try {
     const { id } = await context.params;
     const body = await request.json();
@@ -73,6 +84,15 @@ export async function DELETE(
   _request: Request,
   context: RouteContext
 ) {
+  const session = await auth();
+
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
   const { id } = await context.params;
   const deleted = deleteCategory(id);
 

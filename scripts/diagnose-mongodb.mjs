@@ -100,17 +100,21 @@ if (!uri) {
     });
   }
 
-  const servers = await testDNS();
+   
+const servers = await testDNS();
 
-  if (servers.length > 0) {
-    const { host, port } = servers[0];
+for (let i = 0; i < servers.length; i++) {
+  const { host, port } = servers[i];
 
-    const tcpOK = await testTCP(host, port);
+  console.log(`\nTesting MongoDB server ${i + 1}`);
 
-    if (tcpOK) {
-      await testTLS(host, port);
-    }
+  const tcpOK = await testTCP(host, port);
+
+  if (tcpOK) {
+    await testTLS(host, port);
   }
+}
 
-  console.log("MongoDB network diagnostic finished.");
+console.log("\nMongoDB network diagnostic finished.");
+
 }

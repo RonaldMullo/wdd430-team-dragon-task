@@ -70,13 +70,17 @@ if (!uri) {
       console.log("3. Testing TLS handshake...");
 
       
+
 const socket = tls.connect({
   host,
   port,
   servername: host,
   family: 4,
+  minVersion: "TLSv1.2",
+  maxVersion: "TLSv1.2",
   rejectUnauthorized: true,
 });
+
 
 
       socket.setTimeout(10000);

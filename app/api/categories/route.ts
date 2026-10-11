@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import {
   categoryNameExists,
@@ -8,33 +9,60 @@ import type { Category } from "@/types/category";
 import { auth } from "@/auth";
 
 export async function GET() {
-  return NextResponse.json(getCategories());
+  try {
+    const categories = await getCategories();
+
+    return NextResponse.json(categories);
+  } catch (error) {
+    console.error("Error loading categories:", error);
+
+    return NextResponse.json(
+      { error: "Unable to load categories" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request) {
-  
-const session = await auth();
+  const session = await auth();
 
-if (!session?.user) {
-  return NextResponse.json(
-    { error: "Unauthorized" },
-    { status: 401 }
-  );
-}
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  let body: unknown;
 
   try {
-    const body = await request.json();
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON request body" },
+      { status: 400 }
+    );
+  }
 
-    if (typeof body.name !== "string" || !body.name.trim()) {
-      return NextResponse.json(
-        { error: "Category name is required" },
-        { status: 400 }
-      );
-    }
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    !("name" in body) ||
+    typeof body.name !== "string" ||
+    !body.name.trim()
+  ) {
+    return NextResponse.json(
+      { error: "Category name is required" },
+      { status: 400 }
+    );
+  }
 
-    const name = body.name.trim();
+  const name = body.name.trim();
 
-    if (categoryNameExists(name)) {
+  try {
+    const exists = await categoryNameExists(name);
+
+    if (exists) {
       return NextResponse.json(
         { error: "Category name already exists" },
         { status: 409 }
@@ -50,13 +78,17 @@ if (!session?.user) {
       updatedAt: now,
     };
 
-    return NextResponse.json(createCategory(category), {
+    const createdCategory = await createCategory(category);
+
+    return NextResponse.json(createdCategory, {
       status: 201,
     });
-  } catch {
+  } catch (error) {
+    console.error("Error creating category:", error);
+
     return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 }
+      { error: "Unable to create category" },
+      { status: 500 }
     );
   }
 }

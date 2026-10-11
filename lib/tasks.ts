@@ -1,47 +1,65 @@
+
 import type { Task } from "@/types/task";
+import { getDatabase } from "@/lib/mongodb";
 
-const tasks: Task[] = [];
+const COLLECTION = "tasks";
 
-export function getTasks(): Task[] {
-  return tasks;
+export async function getTasks(): Promise<Task[]> {
+  const db = await getDatabase();
+
+  return db
+    .collection<Task>(COLLECTION)
+    .find({})
+    .toArray();
 }
 
-export function getTaskById(id: string): Task | undefined {
-  return tasks.find((task) => task.id === id);
+export async function getTaskById(
+  id: string
+): Promise<Task | null> {
+  const db = await getDatabase();
+
+  return db.collection<Task>(COLLECTION).findOne({ id });
 }
 
-export function createTask(task: Task): Task {
-  tasks.push(task);
+export async function createTask(task: Task): Promise<Task> {
+  const db = await getDatabase();
+
+  await db.collection<Task>(COLLECTION).insertOne(task);
+
   return task;
 }
 
-export function updateTask(
+export async function updateTask(
   id: string,
   updates: Partial<Task>
-): Task | undefined {
-  const index = tasks.findIndex((task) => task.id === id);
+): Promise<Task | null> {
+  const db = await getDatabase();
+  const collection = db.collection<Task>(COLLECTION);
 
-  if (index === -1) {
-    return undefined;
-  }
+  const { id: _ignoredId, ...safeUpdates } = updates;
 
-  tasks[index] = {
-    ...tasks[index],
-    ...updates,
-    id: tasks[index].id,
-    updatedAt: new Date().toISOString(),
-  };
+  const result = await collection.findOneAndUpdate(
+    { id },
+    {
+      $set: {
+        ...safeUpdates,
+        updatedAt: new Date().toISOString(),
+      },
+    },
+    { returnDocument: "after" }
+  );
 
-  return tasks[index];
+  return result;
 }
 
-export function deleteTask(id: string): boolean {
-  const index = tasks.findIndex((task) => task.id === id);
+export async function deleteTask(
+  id: string
+): Promise<boolean> {
+  const db = await getDatabase();
 
-  if (index === -1) {
-    return false;
-  }
+  const result = await db
+    .collection<Task>(COLLECTION)
+    .deleteOne({ id });
 
-  tasks.splice(index, 1);
-  return true;
+  return result.deletedCount === 1;
 }

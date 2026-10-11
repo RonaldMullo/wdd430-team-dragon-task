@@ -24,7 +24,7 @@ export async function GET(
   context: RouteContext
 ) {
   const { id } = await context.params;
-  const task = getTaskById(id);
+  const task = await getTaskById(id);
 
   if (!task) {
     return NextResponse.json(
@@ -63,7 +63,7 @@ export async function PUT(
       );
     }
 
-    const task = updateTask(id, body);
+    const task = await updateTask(id, body);
 
     if (!task) {
       return NextResponse.json(
@@ -95,7 +95,7 @@ export async function DELETE(
   }
 
   const { id } = await context.params;
-  const deleted = deleteTask(id);
+  const deleted = await deleteTask(id);
 
   if (!deleted) {
     return NextResponse.json(

@@ -1,56 +1,77 @@
+
 import type { Category } from "@/types/category";
+import { getDatabase } from "@/lib/mongodb";
 
-const categories: Category[] = [];
+const COLLECTION = "categories";
 
-export function getCategories(): Category[] {
-  return categories;
+export async function getCategories(): Promise<Category[]> {
+  const db = await getDatabase();
+
+  return db.collection<Category>(COLLECTION).find({}).toArray();
 }
 
-export function getCategoryById(id: string): Category | undefined {
-  return categories.find((category) => category.id === id);
+export async function getCategoryById(
+  id: string
+): Promise<Category | null> {
+  const db = await getDatabase();
+
+  return db.collection<Category>(COLLECTION).findOne({ id });
 }
 
-export function categoryNameExists(
+export async function categoryNameExists(
   name: string,
   excludeId?: string
-): boolean {
-  const normalizedName = name.trim().toLowerCase();
+): Promise<boolean> {
+  const db = await getDatabase();
+  const normalizedName = name.trim();
 
-  return categories.some(
-    (category) =>
-      category.name.trim().toLowerCase() === normalizedName &&
-      category.id !== excludeId
+  const category = await db.collection<Category>(COLLECTION).findOne({
+    name: {
+      $regex: `^${normalizedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+      $options: "i",
+    },
+    ...(excludeId ? { id: { $ne: excludeId } } : {}),
+  });
+
+  return category !== null;
+}
+
+export async function createCategory(
+  category: Category
+): Promise<Category> {
+  const db = await getDatabase();
+
+  await db.collection<Category>(COLLECTION).insertOne(category);
+
+  return category;
+}
+
+export async function updateCategory(
+  id: string,
+  name: string
+): Promise<Category | null> {
+  const db = await getDatabase();
+
+  return db.collection<Category>(COLLECTION).findOneAndUpdate(
+    { id },
+    {
+      $set: {
+        name: name.trim(),
+        updatedAt: new Date().toISOString(),
+      },
+    },
+    { returnDocument: "after" }
   );
 }
 
-export function createCategory(category: Category): Category {
-  categories.push(category);
-  return category;
-}
+export async function deleteCategory(
+  id: string
+): Promise<boolean> {
+  const db = await getDatabase();
 
-export function updateCategory(
-  id: string,
-  name: string
-): Category | undefined {
-  const category = categories.find((item) => item.id === id);
+  const result = await db
+    .collection<Category>(COLLECTION)
+    .deleteOne({ id });
 
-  if (!category) {
-    return undefined;
-  }
-
-  category.name = name.trim();
-  category.updatedAt = new Date().toISOString();
-
-  return category;
-}
-
-export function deleteCategory(id: string): boolean {
-  const index = categories.findIndex((category) => category.id === id);
-
-  if (index === -1) {
-    return false;
-  }
-
-  categories.splice(index, 1);
-  return true;
+  return result.deletedCount === 1;
 }

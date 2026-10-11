@@ -90,6 +90,36 @@ export default function TaskDashboard() {
   async function handleTaskCreated() {
     await loadData();
   }
+  async function handleTaskUpdated(
+  id: string,
+  updates: Partial<Task>
+) {
+  const response = await fetch(`/api/tasks/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updates),
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to update task.");
+  }
+
+  await loadData();
+}
+
+async function handleTaskDeleted(id: string) {
+  const response = await fetch(`/api/tasks/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to delete task.");
+  }
+
+  await loadData();
+}
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -123,10 +153,12 @@ export default function TaskDashboard() {
           )}
 
           <TaskList
-            tasks={tasks}
-            categories={categories}
-            loading={loading}
-          />
+  tasks={tasks}
+  categories={categories}
+  loading={loading}
+  onTaskUpdated={handleTaskUpdated}
+  onTaskDeleted={handleTaskDeleted}
+/>
         </div>
       </div>
     </main>

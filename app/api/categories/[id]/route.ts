@@ -12,23 +12,34 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+// GET - Retrieve a category by ID
 export async function GET(
   _request: Request,
   context: RouteContext
 ) {
-  const { id } = await context.params;
-  const category = getCategoryById(id);
+  try {
+    const { id } = await context.params;
+    const category = await getCategoryById(id);
 
-  if (!category) {
+    if (!category) {
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(category);
+  } catch (error) {
+    console.error("Error loading category:", error);
+
     return NextResponse.json(
-      { error: "Category not found" },
-      { status: 404 }
+      { error: "Unable to load category" },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json(category);
 }
 
+// PUT - Update an existing category
 export async function PUT(
   request: Request,
   context: RouteContext
@@ -42,18 +53,36 @@ export async function PUT(
     );
   }
 
+  let body: unknown;
+
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON request body" },
+      { status: 400 }
+    );
+  }
+
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    !("name" in body) ||
+    typeof body.name !== "string" ||
+    !body.name.trim()
+  ) {
+    return NextResponse.json(
+      { error: "Category name is required" },
+      { status: 400 }
+    );
+  }
+
   try {
     const { id } = await context.params;
-    const body = await request.json();
 
-    if (typeof body.name !== "string" || !body.name.trim()) {
-      return NextResponse.json(
-        { error: "Category name is required" },
-        { status: 400 }
-      );
-    }
+    const existingCategory = await getCategoryById(id);
 
-    if (!getCategoryById(id)) {
+    if (!existingCategory) {
       return NextResponse.json(
         { error: "Category not found" },
         { status: 404 }
@@ -62,24 +91,36 @@ export async function PUT(
 
     const name = body.name.trim();
 
-    if (categoryNameExists(name, id)) {
+    const nameExists = await categoryNameExists(name, id);
+
+    if (nameExists) {
       return NextResponse.json(
         { error: "Category name already exists" },
         { status: 409 }
       );
     }
 
-    const category = updateCategory(id, name);
+    const category = await updateCategory(id, name);
+
+    if (!category) {
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json(category);
-  } catch {
+  } catch (error) {
+    console.error("Error updating category:", error);
+
     return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 }
+      { error: "Unable to update category" },
+      { status: 500 }
     );
   }
 }
 
+// DELETE - Delete a category by ID
 export async function DELETE(
   _request: Request,
   context: RouteContext
@@ -93,17 +134,26 @@ export async function DELETE(
     );
   }
 
-  const { id } = await context.params;
-  const deleted = deleteCategory(id);
+  try {
+    const { id } = await context.params;
+    const deleted = await deleteCategory(id);
 
-  if (!deleted) {
+    if (!deleted) {
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      message: "Category deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting category:", error);
+
     return NextResponse.json(
-      { error: "Category not found" },
-      { status: 404 }
+      { error: "Unable to delete category" },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json({
-    message: "Category deleted successfully",
-  });
 }

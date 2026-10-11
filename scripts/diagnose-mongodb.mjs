@@ -121,3 +121,20 @@ for (let i = 0; i < servers.length; i++) {
 console.log("\nMongoDB network diagnostic finished.");
 
 }
+
+console.log("\nChecking Render public IP...");
+
+try {
+  const response = await fetch("https://api.ipify.org?format=json", {
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const data = await response.json();
+  console.log("Public outbound IP:", data.ip);
+} catch (error) {
+  console.log("Unable to determine public IP:", error.message);
+}

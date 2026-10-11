@@ -69,12 +69,15 @@ if (!uri) {
     return new Promise((resolve) => {
       console.log("3. Testing TLS handshake...");
 
-      const socket = tls.connect({
-        host,
-        port,
-        servername: host,
-        rejectUnauthorized: true,
-      });
+      
+const socket = tls.connect({
+  host,
+  port,
+  servername: host,
+  family: 4,
+  rejectUnauthorized: true,
+});
+
 
       socket.setTimeout(10000);
 

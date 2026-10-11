@@ -4,28 +4,32 @@ import { MongoClient, type Db } from "mongodb";
 const uri = process.env.MONGODB_URI;
 
 if (!uri) {
-  throw new Error("MONGODB_URI is not defined in .env.local");
+  throw new Error("MONGODB_URI environment variable is missing");
 }
-
-const client = new MongoClient(uri);
-
-let clientPromise: Promise<MongoClient>;
 
 declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
-if (process.env.NODE_ENV === "development") {
-  if (!global._mongoClientPromise) {
-    global._mongoClientPromise = client.connect();
+function connectToMongoDB(): Promise<MongoClient> {
+  if (!globalThis._mongoClientPromise) {
+    const client = new MongoClient(uri!, {
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+    });
+
+    globalThis._mongoClientPromise = client
+      .connect()
+      .catch((error) => {
+        globalThis._mongoClientPromise = undefined;
+        throw error;
+      });
   }
 
-  clientPromise = global._mongoClientPromise;
-} else {
-  clientPromise = client.connect();
+  return globalThis._mongoClientPromise;
 }
 
 export async function getDatabase(): Promise<Db> {
-  const connectedClient = await clientPromise;
-  return connectedClient.db("DragonTaskDB");
+  const client = await connectToMongoDB();
+  return client.db("DragonTaskDB");
 }

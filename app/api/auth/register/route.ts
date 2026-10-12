@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createUser } from "@/lib/users";
+import { checkRegistrationRateLimit } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   name: z.string().trim().min(2).max(100),
@@ -10,6 +11,39 @@ const registerSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const forwardedFor = request.headers.get("x-forwarded-for");
+
+    const clientIp = forwardedFor?.split(",")[0]?.trim();
+
+    // Fail closed if the client cannot be identified.
+    // Local requests use a shared development identifier.
+    const clientKey = clientIp
+      ? `registration:ip:${clientIp}`
+      : process.env.NODE_ENV === "development"
+        ? "registration:local-development"
+        : null;
+
+    if (!clientKey) {
+      return NextResponse.json(
+        { message: "Unable to verify registration request." },
+        { status: 503 }
+      );
+    }
+
+    const allowed = await checkRegistrationRateLimit(clientKey);
+
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          message: "Too many registration attempts. Try again in 15 minutes.",
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": "900" },
+        }
+      );
+    }
+
     const body: unknown = await request.json();
 
     const validation = registerSchema.safeParse(body);

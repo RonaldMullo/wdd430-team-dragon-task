@@ -6,6 +6,7 @@ import TaskList from "@/components/tasks/TaskList";
 import type { Category } from "@/types/category";
 import type { Task } from "@/types/task";
 import SignOutButton from "@/components/auth/SignOutButton";
+import CategoryManager from "@/components/categories/CategoryManager";
 
 export default function TaskDashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -141,7 +142,16 @@ async function handleTaskDeleted(id: string) {
         </header>
 
         <div className="space-y-8">
-          <TaskForm onTaskCreated={handleTaskCreated} />
+  <TaskForm
+    onTaskCreated={handleTaskCreated}
+    categories={categories}
+  />
+
+  <CategoryManager
+    categories={categories}
+    onCategoriesChanged={loadData}
+  />
+
 
           {error && (
             <p

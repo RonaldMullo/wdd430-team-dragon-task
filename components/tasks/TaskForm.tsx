@@ -1,43 +1,28 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import type { Category } from "@/types/category";
 import type { Priority } from "@/types/task";
 
 type TaskFormProps = {
   onTaskCreated: () => void;
+  categories: Category[];
 };
 
 const priorities: Priority[] = ["Low", "Medium", "High", "Urgent"];
 
-export default function TaskForm({ onTaskCreated }: TaskFormProps) {
+export default function TaskForm({
+  onTaskCreated,
+  categories,
+}: TaskFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [priority, setPriority] = useState<Priority>("Medium");
-  const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    async function loadCategories() {
-      try {
-        const response = await fetch("/api/categories");
-
-        if (!response.ok) {
-          throw new Error("Unable to load categories.");
-        }
-
-        const data: Category[] = await response.json();
-        setCategories(data);
-      } catch {
-        setError("Unable to load categories.");
-      }
-    }
-
-    void loadCategories();
-  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -128,7 +127,10 @@ export default function TaskList({
       </div>
 
       {error && (
-        <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <p
+          role="alert"
+          className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700"
+        >
           {error}
         </p>
       )}
@@ -242,7 +244,9 @@ export default function TaskList({
                 </div>
 
                 {task.description && (
-                  <p className="mt-3 text-sm text-gray-600">{task.description}</p>
+                  <p className="mt-3 text-sm text-gray-600">
+                    {task.description}
+                  </p>
                 )}
 
                 <dl className="mt-4 space-y-2 text-sm">
@@ -258,7 +262,9 @@ export default function TaskList({
                   </div>
                   <div className="flex justify-between gap-3">
                     <dt className="font-medium text-gray-700">Priority</dt>
-                    <dd className="text-right text-gray-600">{task.priority}</dd>
+                    <dd className="text-right text-gray-600">
+                      {task.priority}
+                    </dd>
                   </div>
                 </dl>
 

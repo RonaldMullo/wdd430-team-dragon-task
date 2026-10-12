@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import {
@@ -12,14 +11,17 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-// GET - Retrieve a category by ID
-export async function GET(
-  _request: Request,
-  context: RouteContext
-) {
+export async function GET(_request: Request, context: RouteContext) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { id } = await context.params;
-    const category = await getCategoryById(id);
+
+    const category = await getCategoryById(id, session.user.id);
 
     if (!category) {
       return NextResponse.json(
@@ -39,18 +41,11 @@ export async function GET(
   }
 }
 
-// PUT - Update an existing category
-export async function PUT(
-  request: Request,
-  context: RouteContext
-) {
+export async function PUT(request: Request, context: RouteContext) {
   const session = await auth();
 
-  if (!session?.user) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body: unknown;
@@ -67,20 +62,23 @@ export async function PUT(
   if (
     typeof body !== "object" ||
     body === null ||
+    Array.isArray(body) ||
     !("name" in body) ||
     typeof body.name !== "string" ||
-    !body.name.trim()
+    !body.name.trim() ||
+    body.name.trim().length > 100
   ) {
     return NextResponse.json(
-      { error: "Category name is required" },
+      { error: "Category name must be between 1 and 100 characters" },
       { status: 400 }
     );
   }
 
   try {
     const { id } = await context.params;
+    const userId = session.user.id;
 
-    const existingCategory = await getCategoryById(id);
+    const existingCategory = await getCategoryById(id, userId);
 
     if (!existingCategory) {
       return NextResponse.json(
@@ -91,16 +89,16 @@ export async function PUT(
 
     const name = body.name.trim();
 
-    const nameExists = await categoryNameExists(name, id);
+    const exists = await categoryNameExists(name, userId, id);
 
-    if (nameExists) {
+    if (exists) {
       return NextResponse.json(
         { error: "Category name already exists" },
         { status: 409 }
       );
     }
 
-    const category = await updateCategory(id, name);
+    const category = await updateCategory(id, userId, name);
 
     if (!category) {
       return NextResponse.json(
@@ -120,23 +118,17 @@ export async function PUT(
   }
 }
 
-// DELETE - Delete a category by ID
-export async function DELETE(
-  _request: Request,
-  context: RouteContext
-) {
+export async function DELETE(_request: Request, context: RouteContext) {
   const session = await auth();
 
-  if (!session?.user) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const { id } = await context.params;
-    const deleted = await deleteCategory(id);
+
+    const deleted = await deleteCategory(id, session.user.id);
 
     if (!deleted) {
       return NextResponse.json(

@@ -1,13 +1,13 @@
 # Dragon Task 2.0
 
-Dragon Task 2.0 is a full-stack task management application developed as a team project for WDD430 – Web Full-Stack Development at BYU–Idaho.
+Dragon Task 2.0 is a full-stack task management application developed as a team project for WDD430 - Web Full-Stack Development
 
-The application helps users organize their daily activities, create and update tasks, assign priorities, and manage tasks by category. Task information is stored persistently in MongoDB Atlas.
+The application helps users organize tasks, manage priorities, set due dates, and organize activities into categories. Data is stored in MongoDB Atlas.
 
 ## Team Members
 
-- Ronald Mullo — Team Lead
-- Nicholas Kigozi — Team Member
+- Ronald Mullo - Team Lead
+- Nicholas Kigozi - Team Member
 
 ## Live Application
 
@@ -19,24 +19,49 @@ https://github.com/RonaldMullo/wdd430-team-dragon-task
 
 ## Main Features
 
-- User authentication and protected dashboard
+- User registration with securely hashed passwords
+- User login and logout using Auth.js
+- Protected application routes
+- Individual task and category data for each user
+- Dashboard with task statistics
 - Create, view, update, and delete tasks
-- Assign task priorities
-- Set due dates
-- Organize tasks using categories
-- Persist task data in MongoDB Atlas
+- Create, view, update, and delete categories
+- Assign task priorities and due dates
+- Organize tasks by category
+- Persistent data storage using MongoDB Atlas
 - Responsive interface for desktop and mobile devices
+
+## Application Pages
+
+- `/register` - Create a new account
+- `/login` - Sign in
+- `/dashboard` - View task statistics
+- `/tasks` - Manage tasks
+- `/categories` - Manage categories
 
 ## Technologies
 
-- Next.js 16
+- Next.js 16 with App Router
 - React 19
 - TypeScript
 - Tailwind CSS
 - Auth.js / NextAuth
+- bcryptjs
+- Zod
 - MongoDB Atlas
 - Render
 - Git and GitHub
+- ESLint and Prettier
+
+## Project Architecture
+
+The application uses Next.js App Router with server-side API route handlers.
+
+The frontend communicates with the API, which validates requests and performs database operations using MongoDB Atlas.
+
+Authentication is managed through Auth.js. Task and category operations use the authenticated user's ID to restrict access to their own records.
+
+Reusable React components support the dashboard, navigation, task management, category management, and authentication interface.
 
 ## Local Development
 
@@ -58,12 +83,13 @@ https://github.com/RonaldMullo/wdd430-team-dragon-task
    npm install
    ```
 
-4. Create a `.env.local` file with the environment variables required by the application:
+4. Create a `.env.local` file:
 
    ```env
    MONGODB_URI=your_mongodb_connection_string
-   AUTH_SECRET=your_auth_secret
+   AUTH_SECRET=your_generated_auth_secret
    AUTH_TRUST_HOST=true
+   AUTH_URL=http://localhost:3000
    DEMO_USER_EMAIL=your_demo_email
    DEMO_USER_PASSWORD=your_demo_password
    ```
@@ -76,34 +102,84 @@ https://github.com/RonaldMullo/wdd430-team-dragon-task
 
 6. Open http://localhost:3000 in your browser.
 
-**Security:** Environment variables and credentials must never be committed to GitHub.
+## Available Commands
 
-## Deployment
-
-The production application is deployed on Render and uses MongoDB Atlas for persistent data storage.
-
-The deployment process includes:
-
-1. Connecting the GitHub repository to a Render web service.
-2. Configuring the required environment variables in Render.
-3. Authorizing the Render outbound IP ranges in MongoDB Atlas.
-4. Installing dependencies and building the Next.js application.
-5. Starting the production server with `npm run start`.
-6. Testing the deployed application and database persistence.
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+```
 
 ## API Routes
 
-The application uses Next.js server-side API route handlers to communicate with MongoDB Atlas.
+### Authentication
 
-Task operations include creating, retrieving, updating, and deleting records. Category-related API functionality is also part of the application architecture.
+- `POST /api/auth/register` - Register a new user
+- `/api/auth/*` - Auth.js authentication handlers
 
-## Known Issues and Opportunities for Improvement
+### Tasks
 
-- Render's free hosting tier may take additional time to respond after a period of inactivity.
-- Additional automated testing could improve reliability.
-- Future enhancements could include more advanced filtering, reminders, and reporting features.
+- `GET /api/tasks` - List the current user's tasks
+- `POST /api/tasks` - Create a task
+- `GET /api/tasks/[id]` - Retrieve a task
+- `PUT /api/tasks/[id]` - Update a task
+- `DELETE /api/tasks/[id]` - Delete a task
+
+### Categories
+
+- `GET /api/categories` - List the current user's categories
+- `POST /api/categories` - Create a category
+- `GET /api/categories/[id]` - Retrieve a category
+- `PUT /api/categories/[id]` - Update a category
+- `DELETE /api/categories/[id]` - Delete a category
+
+Task and category endpoints require authentication.
+
+## Security
+
+- Passwords are hashed using bcryptjs.
+- Protected routes require authentication.
+- API operations are scoped to the authenticated user.
+- Task category assignments are validated against user ownership.
+- Input validation is applied to API requests.
+- Environment variables and credentials must not be committed to GitHub.
+
+Additional rate limiting and automated security testing are planned as future improvements.
+
+## Deployment
+
+The application is deployed using Render and MongoDB Atlas.
+
+Deployment steps:
+
+1. Connect the GitHub repository to a Render web service.
+2. Configure environment variables in Render.
+3. Configure MongoDB Atlas network access.
+4. Install dependencies and build the Next.js application.
+5. Start the production server using `npm run start`.
+6. Verify authentication, API operations, and database persistence.
+
+## Testing
+
+The following functionality has been tested locally:
+
+- User registration and automatic sign-in
+- Login and logout
+- Protected pages
+- Dashboard statistics
+- Task and category persistence
+- Separation of data between accounts
+- Rejection of access to another user's task
+- Successful production build
+
+## Known Limitations and Future Improvements
+
+- Render's free tier may respond slowly after inactivity.
+- Additional automated tests are recommended.
+- Registration and login rate limiting should be added before broader public use.
+- Future features may include reminders, advanced filtering, and reporting.
 
 ## Course
 
-WDD430 – Web Full-Stack Development  
-Brigham Young University–Idaho
+WDD430 - Web Full-Stack Development

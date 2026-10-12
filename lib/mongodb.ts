@@ -1,4 +1,3 @@
-
 import { MongoClient, type Db } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
@@ -18,12 +17,10 @@ function connectToMongoDB(): Promise<MongoClient> {
       connectTimeoutMS: 10000,
     });
 
-    globalThis._mongoClientPromise = client
-      .connect()
-      .catch((error) => {
-        globalThis._mongoClientPromise = undefined;
-        throw error;
-      });
+    globalThis._mongoClientPromise = client.connect().catch((error) => {
+      globalThis._mongoClientPromise = undefined;
+      throw error;
+    });
   }
 
   return globalThis._mongoClientPromise;

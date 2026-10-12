@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -37,16 +36,13 @@ export default function TaskDashboard({
       }
 
       const tasksData: Task[] = await tasksResponse.json();
-      const categoriesData: Category[] =
-        await categoriesResponse.json();
+      const categoriesData: Category[] = await categoriesResponse.json();
 
       setTasks(tasksData);
       setCategories(categoriesData);
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to load task data."
+        error instanceof Error ? error.message : "Unable to load task data."
       );
       throw error;
     } finally {
@@ -60,43 +56,35 @@ export default function TaskDashboard({
 
     async function loadInitialData() {
       try {
-        const [tasksResponse, categoriesResponse] =
-          await Promise.all([
-            fetch("/api/tasks", {
-              signal: controller.signal,
-            }),
-            fetch("/api/categories", {
-              signal: controller.signal,
-            }),
-          ]);
+        const [tasksResponse, categoriesResponse] = await Promise.all([
+          fetch("/api/tasks", {
+            signal: controller.signal,
+          }),
+          fetch("/api/categories", {
+            signal: controller.signal,
+          }),
+        ]);
 
         if (!tasksResponse.ok || !categoriesResponse.ok) {
           throw new Error("Unable to load task data.");
         }
 
-        const tasksData: Task[] =
-          await tasksResponse.json();
+        const tasksData: Task[] = await tasksResponse.json();
 
-        const categoriesData: Category[] =
-          await categoriesResponse.json();
+        const categoriesData: Category[] = await categoriesResponse.json();
 
         if (!controller.signal.aborted) {
           setTasks(tasksData);
           setCategories(categoriesData);
         }
       } catch (error) {
-        if (
-          error instanceof Error &&
-          error.name === "AbortError"
-        ) {
+        if (error instanceof Error && error.name === "AbortError") {
           return;
         }
 
         if (!controller.signal.aborted) {
           setError(
-            error instanceof Error
-              ? error.message
-              : "Unable to load task data."
+            error instanceof Error ? error.message : "Unable to load task data."
           );
         }
       } finally {
@@ -119,10 +107,7 @@ export default function TaskDashboard({
   }
 
   // Update task
-  async function handleTaskUpdated(
-    id: string,
-    updates: Partial<Task>
-  ) {
+  async function handleTaskUpdated(id: string, updates: Partial<Task>) {
     const response = await fetch(`/api/tasks/${id}`, {
       method: "PUT",
       headers: {
@@ -154,18 +139,12 @@ export default function TaskDashboard({
   // Dashboard statistics
   const totalTasks = tasks.length;
 
-  const pendingTasks = tasks.filter(
-    (task) => !task.completed
-  ).length;
+  const pendingTasks = tasks.filter((task) => !task.completed).length;
 
-  const completedTasks = tasks.filter(
-    (task) => task.completed
-  ).length;
+  const completedTasks = tasks.filter((task) => task.completed).length;
 
   const highPriorityTasks = tasks.filter(
-    (task) =>
-      task.priority === "High" ||
-      task.priority === "Urgent"
+    (task) => task.priority === "High" || task.priority === "Urgent"
   ).length;
 
   const stats = [

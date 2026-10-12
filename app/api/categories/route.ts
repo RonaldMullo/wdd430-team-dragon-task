@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import {
   categoryNameExists,
@@ -9,8 +8,14 @@ import type { Category } from "@/types/category";
 import { auth } from "@/auth";
 
 export async function GET() {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const categories = await getCategories();
+    const categories = await getCategories(session.user.id);
 
     return NextResponse.json(categories);
   } catch (error) {
@@ -26,11 +31,8 @@ export async function GET() {
 export async function POST(request: Request) {
   const session = await auth();
 
-  if (!session?.user) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body: unknown;
@@ -47,12 +49,14 @@ export async function POST(request: Request) {
   if (
     typeof body !== "object" ||
     body === null ||
+    Array.isArray(body) ||
     !("name" in body) ||
     typeof body.name !== "string" ||
-    !body.name.trim()
+    !body.name.trim() ||
+    body.name.trim().length > 100
   ) {
     return NextResponse.json(
-      { error: "Category name is required" },
+      { error: "Category name must be between 1 and 100 characters" },
       { status: 400 }
     );
   }
@@ -60,7 +64,7 @@ export async function POST(request: Request) {
   const name = body.name.trim();
 
   try {
-    const exists = await categoryNameExists(name);
+    const exists = await categoryNameExists(name, session.user.id);
 
     if (exists) {
       return NextResponse.json(
@@ -78,7 +82,7 @@ export async function POST(request: Request) {
       updatedAt: now,
     };
 
-    const createdCategory = await createCategory(category);
+    const createdCategory = await createCategory(category, session.user.id);
 
     return NextResponse.json(createdCategory, {
       status: 201,

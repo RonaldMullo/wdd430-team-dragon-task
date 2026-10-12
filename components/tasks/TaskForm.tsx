@@ -11,10 +11,7 @@ type TaskFormProps = {
 
 const priorities: Priority[] = ["Low", "Medium", "High", "Urgent"];
 
-export default function TaskForm({
-  onTaskCreated,
-  categories,
-}: TaskFormProps) {
+export default function TaskForm({ onTaskCreated, categories }: TaskFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -22,7 +19,6 @@ export default function TaskForm({
   const [priority, setPriority] = useState<Priority>("Medium");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -77,9 +73,7 @@ export default function TaskForm({
       className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
     >
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">
-          Create a task
-        </h2>
+        <h2 className="text-xl font-semibold text-gray-900">Create a task</h2>
         <p className="mt-1 text-sm text-gray-600">
           Add a task to your Dragon Task list.
         </p>
@@ -153,9 +147,7 @@ export default function TaskForm({
           <select
             id="priority"
             value={priority}
-            onChange={(event) =>
-              setPriority(event.target.value as Priority)
-            }
+            onChange={(event) => setPriority(event.target.value as Priority)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900"
           >
             {priorities.map((item) => (

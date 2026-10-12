@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -20,9 +19,7 @@ export default function CategoryManager({
   const [editingName, setEditingName] = useState("");
 
   // CREATE CATEGORY
-  async function handleCreateCategory(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleCreateCategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
@@ -51,9 +48,7 @@ export default function CategoryManager({
       await onCategoriesChanged();
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to create category."
+        error instanceof Error ? error.message : "Unable to create category."
       );
     } finally {
       setSubmitting(false);
@@ -98,9 +93,7 @@ export default function CategoryManager({
       await onCategoriesChanged();
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to update category."
+        error instanceof Error ? error.message : "Unable to update category."
       );
     } finally {
       setSubmitting(false);
@@ -121,18 +114,13 @@ export default function CategoryManager({
     setError("");
 
     try {
-      const response = await fetch(
-        `/api/categories/${category.id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`/api/categories/${category.id}`, {
+        method: "DELETE",
+      });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(
-          data.error || "Unable to delete category."
-        );
+        throw new Error(data.error || "Unable to delete category.");
       }
 
       if (editingId === category.id) {
@@ -143,9 +131,7 @@ export default function CategoryManager({
       await onCategoriesChanged();
     } catch (error) {
       setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to delete category."
+        error instanceof Error ? error.message : "Unable to delete category."
       );
     } finally {
       setSubmitting(false);
@@ -154,9 +140,7 @@ export default function CategoryManager({
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h2 className="text-xl font-semibold text-gray-900">
-        Manage Categories
-      </h2>
+      <h2 className="text-xl font-semibold text-gray-900">Manage Categories</h2>
 
       <p className="mt-1 text-sm text-gray-600">
         Create, edit, and delete your task categories.
@@ -208,9 +192,7 @@ export default function CategoryManager({
         </h3>
 
         {categories.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No categories yet.
-          </p>
+          <p className="text-sm text-gray-500">No categories yet.</p>
         ) : (
           categories.map((category) => (
             <div
@@ -221,9 +203,7 @@ export default function CategoryManager({
                 <>
                   <input
                     value={editingName}
-                    onChange={(event) =>
-                      setEditingName(event.target.value)
-                    }
+                    onChange={(event) => setEditingName(event.target.value)}
                     aria-label="Edit category name"
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900"
                   />
@@ -232,9 +212,7 @@ export default function CategoryManager({
                     <button
                       type="button"
                       disabled={submitting}
-                      onClick={() =>
-                        void handleUpdateCategory(category.id)
-                      }
+                      onClick={() => void handleUpdateCategory(category.id)}
                       className="rounded-lg bg-gray-900 px-3 py-2 text-sm text-white disabled:opacity-50"
                     >
                       Save
@@ -260,27 +238,25 @@ export default function CategoryManager({
                     {category.name}
                   </span>
 
-                  
-<div className="flex gap-2">
-  <button
-    type="button"
-    disabled={submitting}
-    onClick={() => startEditing(category)}
-    className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700"
-  >
-    Edit
-  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={submitting}
+                      onClick={() => startEditing(category)}
+                      className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700"
+                    >
+                      Edit
+                    </button>
 
-  <button
-    type="button"
-    disabled={submitting}
-    onClick={() => void handleDeleteCategory(category)}
-    className="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
-  >
-    Delete
-  </button>
-</div>
-
+                    <button
+                      type="button"
+                      disabled={submitting}
+                      onClick={() => void handleDeleteCategory(category)}
+                      className="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </>
               )}
             </div>

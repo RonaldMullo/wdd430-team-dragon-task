@@ -145,7 +145,7 @@ Task and category endpoints require authentication.
 - Input validation is applied to API requests.
 - Environment variables and credentials must not be committed to GitHub.
 
-Additional rate limiting and automated security testing are planned as future improvements.
+User registration is protected by MongoDB-backed IP-based rate limiting (5 requests per 15 minutes). Login rate limiting and automated security testing remain future improvements..
 
 ## Deployment
 
@@ -177,7 +177,7 @@ The following functionality has been tested locally:
 
 - Render's free tier may respond slowly after inactivity.
 - Additional automated tests are recommended.
-- Registration and login rate limiting should be added before broader public use.
+- Login rate limiting and additional security hardening are recommended before broader public use.
 - Future features may include reminders, advanced filtering, and reporting.
 
 ## Course
